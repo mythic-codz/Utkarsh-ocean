@@ -31,38 +31,42 @@
 
 <script>
 /* ===============================
-   DEVTOOLS + DATA EXTRACTION BLOCK
-   (WORKS WITH VERCEL MIDDLEWARE)
+   SERVER-SIDE BLOCK CHECK
+================================ */
+fetch("/api/block");
+
+/* ===============================
+   CLIENT-SIDE DEVTOOLS BLOCK
 ================================ */
 
-// Already blocked → redirect
+// If already blocked → redirect
 if (document.cookie.includes("devtool_blocked=true")) {
-  window.location.replace("/blank");
+  window.location.replace("/blank.html");
 }
 
-// Block user permanently (until clear site data)
+// Block user until cache cleared
 function blockUser() {
   document.cookie =
     "devtool_blocked=true; path=/; max-age=31536000; SameSite=Lax";
-  window.location.replace("/blank");
+  window.location.replace("/blank.html");
 }
 
 // Disable right click
 document.addEventListener("contextmenu", e => e.preventDefault());
 
-// Disable text selection & copy
+// Disable copy
 document.addEventListener("copy", e => {
   e.preventDefault();
   blockUser();
 });
 
-// Block key combinations
+// Block key combos
 document.addEventListener("keydown", e => {
-  const key = e.key.toLowerCase();
+  const k = e.key.toLowerCase();
 
-  // List of blocked shortcuts
   if (
     e.key === "F12" ||
+    e.metaKey ||
     (e.ctrlKey && [
       "c", // copy
       "u", // view source
@@ -71,16 +75,15 @@ document.addEventListener("keydown", e => {
       "s", // save
       "p", // print
       "a"  // select all
-    ].includes(key)) ||
-    (e.ctrlKey && e.shiftKey) || // Ctrl+Shift+*
-    e.metaKey // Cmd (Mac)
+    ].includes(k)) ||
+    (e.ctrlKey && e.shiftKey)
   ) {
     e.preventDefault();
     blockUser();
   }
 });
 
-// DevTools detection (window resize method)
+// DevTools resize detection
 const THRESHOLD = 160;
 setInterval(() => {
   if (
@@ -91,7 +94,7 @@ setInterval(() => {
   }
 }, 500);
 
-// Debugger detection
+// Debugger trap
 (function () {
   const start = Date.now();
   debugger;

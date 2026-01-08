@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aura Study Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+</style>
+</head>
+
+<body>
+
+<iframe src="https://aura-study-hub.vercel.app/"></iframe>
+
+<script>
+// 🚫 If user already blocked → redirect immediately
+if (localStorage.getItem("devtool_blocked") === "true") {
+  window.location.replace("blank.html");
+}
+
+// Function to block user
+function blockUser() {
+  localStorage.setItem("devtool_blocked", "true");
+  window.location.replace("blank.html");
+}
+
+// Disable right click
+document.addEventListener("contextmenu", e => e.preventDefault());
+
+// Block key shortcuts
+document.addEventListener("keydown", e => {
+  if (
+    e.key === "F12" ||
+    (e.ctrlKey && ["u", "i", "j", "s"].includes(e.key.toLowerCase())) ||
+    (e.ctrlKey && e.shiftKey)
+  ) {
+    e.preventDefault();
+    blockUser();
+  }
+});
+
+// DevTools detection (window size method)
+const threshold = 160;
+setInterval(() => {
+  if (
+    window.outerWidth - window.innerWidth > threshold ||
+    window.outerHeight - window.innerHeight > threshold
+  ) {
+    blockUser();
+  }
+}, 500);
+
+// Debugger detection
+(function () {
+  let start = new Date();
+  debugger;
+  if (new Date() - start > 100) {
+    blockUser();
+  }
+})();
+</script>
+
+</body>
+</html>

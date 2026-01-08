@@ -1,62 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Aura Study Hub</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>Aura Study Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<style>
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow: hidden;
-}
-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-</style>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
 </head>
 
 <body>
 
-<iframe src="https://aura-study-hub.vercel.app/"></iframe>
+<iframe src="https://aura-study-hub.vercel.app/" allowfullscreen></iframe>
 
 <script>
-// 🚫 If user already blocked → redirect immediately
-if (localStorage.getItem("devtool_blocked") === "true") {
-  window.location.replace("blank.html");
+/* ===============================
+   DEVTOOLS + DATA EXTRACTION BLOCK
+   (WORKS WITH VERCEL MIDDLEWARE)
+================================ */
+
+// Already blocked → redirect
+if (document.cookie.includes("devtool_blocked=true")) {
+  window.location.replace("/blank");
 }
 
-// Function to block user
+// Block user permanently (until clear site data)
 function blockUser() {
-  localStorage.setItem("devtool_blocked", "true");
-  window.location.replace("blank.html");
+  document.cookie =
+    "devtool_blocked=true; path=/; max-age=31536000; SameSite=Lax";
+  window.location.replace("/blank");
 }
 
 // Disable right click
 document.addEventListener("contextmenu", e => e.preventDefault());
 
-// Block key shortcuts
+// Disable text selection & copy
+document.addEventListener("copy", e => {
+  e.preventDefault();
+  blockUser();
+});
+
+// Block key combinations
 document.addEventListener("keydown", e => {
+  const key = e.key.toLowerCase();
+
+  // List of blocked shortcuts
   if (
     e.key === "F12" ||
-    (e.ctrlKey && ["u", "i", "j", "s"].includes(e.key.toLowerCase())) ||
-    (e.ctrlKey && e.shiftKey)
+    (e.ctrlKey && [
+      "c", // copy
+      "u", // view source
+      "i", // inspect
+      "j", // console
+      "s", // save
+      "p", // print
+      "a"  // select all
+    ].includes(key)) ||
+    (e.ctrlKey && e.shiftKey) || // Ctrl+Shift+*
+    e.metaKey // Cmd (Mac)
   ) {
     e.preventDefault();
     blockUser();
   }
 });
 
-// DevTools detection (window size method)
-const threshold = 160;
+// DevTools detection (window resize method)
+const THRESHOLD = 160;
 setInterval(() => {
   if (
-    window.outerWidth - window.innerWidth > threshold ||
-    window.outerHeight - window.innerHeight > threshold
+    window.outerWidth - window.innerWidth > THRESHOLD ||
+    window.outerHeight - window.innerHeight > THRESHOLD
   ) {
     blockUser();
   }
@@ -64,9 +93,9 @@ setInterval(() => {
 
 // Debugger detection
 (function () {
-  let start = new Date();
+  const start = Date.now();
   debugger;
-  if (new Date() - start > 100) {
+  if (Date.now() - start > 100) {
     blockUser();
   }
 })();
